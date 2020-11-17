@@ -53,7 +53,7 @@ $(document).ready(function () {
 	/* 메뉴 설명 보기 */
 	var menu = $('#menu ul > li');
 
-	menu.on('mouseenter', function(event) {
+	const menuShow = (event) => {
 		var target = event.currentTarget;
 		
 		$(target).find('.ko_title').stop().animate({'top': '50px'}, 400);
@@ -66,9 +66,9 @@ $(document).ready(function () {
 			'bottom': '30px',
 			'opacity': '1'
 		}, 300);
-	});
-
-	menu.on('mouseleave', function(event) {
+	}
+	
+	const menuHide = (event) => {
 		var target = event.currentTarget;
 		
 		$(target).find('.ko_title').stop().animate({'top': '100px'});
@@ -81,7 +81,7 @@ $(document).ready(function () {
 			'bottom': '100px',
 			'opacity': '0'
 		});
-	});
+	}
 
 	/* 메뉴 */
 	var menuTab = $('#menu-tab ul > li');
@@ -109,4 +109,57 @@ $(document).ready(function () {
 			}
 		});
 	});
+
+	const getSandwich = () => {
+        return fetch('http://localhost:3000/subway/sandwich', {
+            'method': 'GET',
+            'headers': {
+                'Content-Type': 'application/json'
+            }
+        }).then(res => res)
+        .then(res => res.json())
+    }
+
+    const templateSandwichLabel = (label) => {
+        if (label) {
+            return `<div class="label">${label}</div>`;
+        } else {
+            return ``;
+        }
+    }
+
+    const templateSandwich = (sandwich) => {
+        const {type, label, img, ko_title, en_title, kcal, summary, view_id} = sandwich;
+
+        return `
+            <li class="${type}">
+                <a href="#">
+                    ${templateSandwichLabel(label)}
+                    <div class="img">
+                        <img src="${img}" alt="${ko_title}">
+                    </div>
+                    <strong class="ko_title">${ko_title}</strong>
+                    <span class="en_title">${en_title}</span>
+                    <span class="kcal">${kcal}</span>
+                    <p class="desc">${summary}</p>
+                    <div class="icon" data-id="${view_id}"></div>
+                </a>
+            </li>
+        `;
+    }
+
+    const listSandwich = async () => {
+        const sandwiches = await getSandwich();
+        const menu = document.getElementById('menu');
+        const menuWrap = menu.querySelector('ul');
+        
+        for(const sandwich of sandwiches) {
+            const node = $(templateSandwich(sandwich))[0];
+			$(node).on('mouseenter', menuShow);
+			$(node).on('mouseleave', menuHide);
+			menuWrap.append(node);
+        }
+    }
+
+    listSandwich();
 });
